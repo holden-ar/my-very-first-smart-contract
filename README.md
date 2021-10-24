@@ -1,6 +1,6 @@
 # Smart Contracts en Solidity
 
-Proyecto realizado en solidity que tiene por objetivo aplicar los (humildes) conocimientos para smart contracts que adquirí en el curso del [Programando Smart Contracts y villeteras virtuales](https://mug-it.org.ar/577-Programando-Smart-Contracts-y-Billeteras-Virtuales.event.aspx).
+Proyecto realizado en solidity que tiene por objetivo aplicar los (humildes) conocimientos para smart contracts que adquirí en el curso del [Programando Smart Contracts y billeteras virtuales](https://mug-it.org.ar/577-Programando-Smart-Contracts-y-Billeteras-Virtuales.event.aspx).
 
 
 
