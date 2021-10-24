@@ -14,6 +14,7 @@ import "hardhat/console.sol";
 */
 
 contract NftSubastable is ERC721, ERC721URIStorage, Ownable {
+    string public version = "1.0.2";
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
     mapping(string => uint8) hashes;
