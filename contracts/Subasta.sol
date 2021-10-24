@@ -10,7 +10,7 @@ import "hardhat/console.sol";
 * Este contrato permite simular una subasta
 */
 abstract contract SubastaBase {
-    
+    string public version = "1.0.2";
     address internal subasta_owner;
     uint256 public subasta_inicio;
     uint256 public subasta_finaliza;
@@ -90,6 +90,17 @@ contract Subasta is SubastaBase {
         ofertas[msg.sender] = 0;
         payable(msg.sender).transfer(monto); 
         emit RetiroRealizadoEvent(msg.sender, monto);
+        return true;
+    }
+
+    function EliminarSubasta() external solo_owner returns (bool) { 
+        require(block.timestamp  > subasta_finaliza || Estado == estado.CANCELADA, "No se puede destruir el contrato, la subasta esta activa");
+        for (uint i = 0; i < oferentes.length; i++)
+        {
+            assert(ofertas[oferentes[i]] == 0);
+        }
+        address payable devolverAlOwner = payable(subasta_owner);
+        selfdestruct(devolverAlOwner); 
         return true;
     }
  }
