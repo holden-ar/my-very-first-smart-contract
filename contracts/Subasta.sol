@@ -69,15 +69,16 @@ contract Subasta is SubastaBase {
         require(msg.value > 0, "La oferta no puede ser 0.");
         require(ofertas[msg.sender] + msg.value > ofertaGanadora, "No se puede ofertar, debe realizar una oferta mas alta");
         oferenteGanador = msg.sender; 
-        ofertaGanadora = msg.value; 
+        ofertaGanadora = ofertas[msg.sender] + msg.value; 
         oferentes.push(msg.sender);
-        ofertas[msg.sender] = ofertas[msg.sender] + msg.value; emit OfertaRealizadaEvent(oferenteGanador, ofertaGanadora);
+        ofertas[msg.sender] = ofertas[msg.sender] + msg.value;
         emit OfertaRealizadaEvent(oferenteGanador, ofertaGanadora); 
         return true;
     }
     
     function cancelarSubasta() public virtual override  solo_owner returns (bool) {
         Estado = estado.CANCELADA;
+        subasta_finaliza = block.timestamp;
         emit SubastaCanceladaEvent("Subasta Cancelada", block.timestamp);
         return true;
     }
