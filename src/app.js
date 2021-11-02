@@ -47,9 +47,9 @@ App = {
         const accounts = await ethereum.request({ method: 'eth_accounts' });
         App.walletAccount = accounts[0];
 
-        App.walletUsers["0x61A1BdcF6947A0DB5052796BfFc2B09b742511e2".toLowerCase()] = "Marcelo Gallardo";
-        App.walletUsers["0x9dCb029930A1d1B4cBCC77DC90Ce8d7cAE88ddd6".toLowerCase()] = "Julián Alvarez";
-        App.walletUsers["0xF87b4306E5219c691142D45DE44E15a2Bf2cfe0b".toLowerCase()] = "Enzo Perez";
+        App.walletUsers["0x61A1BdcF6947A0DB5052796BfFc2B09b742511e2".toLowerCase()] = "Marcelo";
+        App.walletUsers["0x9dCb029930A1d1B4cBCC77DC90Ce8d7cAE88ddd6".toLowerCase()] = "Julián";
+        App.walletUsers["0xF87b4306E5219c691142D45DE44E15a2Bf2cfe0b".toLowerCase()] = "Enzo";
 
         App.currentUserName = App.walletUsers[String(App.walletAccount)];
     },
@@ -125,20 +125,20 @@ App = {
         App.setLoading(false)
     },
 
-    ofertar: async () => {
+    bid: async () => {
         App.setLoading(true)
         const ammount = $('#ammount').val() * 1000000000000000000;
         await App.subasta.ofertar({ from: App.walletAccount, value: ammount })
         window.location.reload()
     },
 
-    retirar: async () => {
+    withdraw: async () => {
         App.setLoading(true)
         await App.subasta.retirar({ from: App.walletAccount })
         window.location.reload()
     },
 
-    finalizar: async () => {
+    cancel: async () => {
         App.setLoading(true)
         await App.subasta.cancelarSubasta({ from: App.walletAccount })
         window.location.reload()
@@ -193,19 +193,19 @@ $(() => {
     $(window).load(() => {
         App.load()
 
-        // Ofertar
+        // Bid
         $("#btnBid").on('click', function () {
-            App.ofertar()
+            App.bid()
         });
 
-        // Retirar
-        $("#btnWidraw").on('click', function () {
-            App.retirar()
+        // withdraw
+        $("#btnWithdraw").on('click', function () {
+            App.withdraw()
         });
 
-        // Finalizar
+        // Cancel
         $("#btnCancel").on('click', function () {
-            App.finalizar()
+            App.cancel()
         });
 
     })
