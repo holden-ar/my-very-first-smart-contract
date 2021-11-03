@@ -1,4 +1,5 @@
 App = {
+    nftContractAddress: "0x8C917fDE016E32944D663C254BcFeCB09C866844",
     loading: false,
     contracts: {},
     walletUsers: [],
@@ -7,7 +8,6 @@ App = {
         await App.loadWeb3()
         await App.loadAccount()
         await App.loadContract()
-        await App.loadAuctionInfo()
         await App.render()
     },
 
@@ -27,14 +27,6 @@ App = {
             } catch (error) {
                 // User denied account access...
             }
-        }
-        // Legacy dapp browsers...
-        else if (window.web3) {
-            console.log('Legacy dapp browsers...')
-            App.web3Provider = web3.currentProvider
-            window.web3 = new Web3(web3.currentProvider)
-            // Acccounts always exposed
-            web3.eth.sendTransaction({/* ... */ })
         }
         // Non-dapp browsers...
         else {
@@ -56,7 +48,7 @@ App = {
 
     loadContract: async () => {
         // Create a JavaScript version of the smart contract
-        const Subasta = await $.getJSON('Subasta.json')
+        const Subasta = await $.getJSON('SubastaNft.json')
         App.contracts.Subasta = TruffleContract(Subasta)
         App.contracts.Subasta.setProvider(App.web3Provider)
 
@@ -64,15 +56,7 @@ App = {
         App.subasta = await App.contracts.Subasta.deployed()
     },
 
-    loadAuctionInfo: async () => {
-        App.status = await App.subasta.Estado()
-        App.start = await App.subasta.subasta_inicio()
-        App.end = await App.subasta.subasta_finaliza()
-        let bid = await App.subasta.ofertaGanadora()
-
-        App.higherBid = String(App.web3.utils.fromWei(bid, 'ether'))
-        App.winerAccount = await App.subasta.oferenteGanador()
-    },
+    
 
 
     setLoading: (boolean) => {
@@ -103,90 +87,22 @@ App = {
         // Render Account
         $('#account').html(App.walletAccount)
 
-        // Render startDate
-        var startDate = new Date(App.start * 1000);
-        $('#inicio').html(startDate.toLocaleString())
-
-        // Render endDate
-        var endDate = new Date(App.end * 1000);
-        App.endDate =endDate.toLocaleString()
-        $('#fin').html(endDate.toLocaleString())
-
-        // Render status
-        await App.renderStatusLegend(String(App.status), App.end * 1000)
-        
-
-        const mensaje = "Mejor oferta <b>" + App.walletUsers[String(App.winerAccount.toLowerCase())] + "</b> " + App.higherBid + " eth."
-        $('#ganador').html(mensaje)
-
-
-
         // Update loading state
         App.setLoading(false)
     },
 
-    bid: async () => {
+   
+    crear: async () => {
         App.setLoading(true)
-        const ammount = $('#ammount').val() * 1000000000000000000;
-        await App.subasta.ofertar({ from: App.walletAccount, value: ammount })
-        window.location.reload()
-    },
-
-    withdraw: async () => {
-        App.setLoading(true)
-        await App.subasta.retirar({ from: App.walletAccount })
+        await App.subasta.crearSubasta(App.nftContractAddress, 1, 10000, { from: App.walletAccount })
         window.location.reload()
     },
 
     cancel: async () => {
         App.setLoading(true)
-        await App.subasta.cancelarSubasta({ from: App.walletAccount })
+        await App.subasta.cancelarSubasta(App.nftContractAddress, 1, { from: App.walletAccount })
         window.location.reload()
-    },
-
-    renderStatusLegend: async (status, endDate) => {
-        var statusLegend;
-        currentDate = Date.now()
-        var badgeStyle;
-        var statusMessage;
-        var controlIsActive;
-        switch (status) {
-            case "0":
-                statusLegend = "Cancelada";
-                badge = "bg-danger"
-                statusMessage = "Finalizó el "+App.endDate
-                controlIsActive =  false
-                break;
-            case "1":
-                if (currentDate > endDate)
-                {
-                    statusLegend = "finalizada"
-                    badgeStyle = "bg-danger"
-                    statusMessage = "Finalizó el "+App.endDate
-                    controlIsActive =  false
-
-                }
-                else
-                {
-                    statusLegend = "En Curso"
-                    badgeStyle = "bg-success"
-                    statusMessage = "Finaliza el "+App.endDate
-                    controlIsActive =  true
-                }
-                break;
-        }
-        $('#status').removeClass("bg-success")
-        $('#status').removeClass("bg-danger")
-        $('#status').addClass(badgeStyle)
-        $('#status').html(statusLegend)
-        $('#statusDate').html(statusMessage)
-        $( "#ammount" ).prop( "disabled", !controlIsActive);
-        $( "#btnBid" ).prop( "disabled", !controlIsActive);
-
     }
-
-
-
 }
 
 $(() => {
@@ -201,6 +117,11 @@ $(() => {
         // withdraw
         $("#btnWithdraw").on('click', function () {
             App.withdraw()
+        });
+
+         // Create
+         $("#btnCreate").on('click', function () {
+            App.crear()
         });
 
         // Cancel
