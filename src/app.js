@@ -7,40 +7,42 @@ App = {
 
     load: async () => {
         console.log("Load Method")
-        App.currentNft= null,
-        App.nftList= new Array(),
-        await App.loadWeb3()
+        let isOk = await App.checkModernBrowser()
+
+        
         await App.loadAccount()
-        await App.loadContract()
-        await App.loadNfts()
-        await App.render()
+
+        let main = $("#content")
+        if(App.walletAccount)
+        {
+            await App.loadContract()
+            await App.loadNfts()
+            await App.render()
+            main.show(500);
+        }
+        else
+        {
+            await App.renderWallet(App.walletAccount)
+            main.hide()
+        }
     },
 
     // Carga Web3 provider
-    loadWeb3: async () => {
-        console.log("loadWeb3 Method")
+    checkModernBrowser: async () => {
+        console.log("checkModernBrowser Method")
         // Modern dapp browsers...
-        if (window.ethereum) {
-            try {
-                // Acccounts now exposed
-                web3.eth.sendTransaction({/* ... */ })
-
-            } catch (error) {
-                // User denied account access...
-            }
-        }
-        // Non-dapp browsers...
-        else {
-            console.log('Non-Ethereum browser detected. You should consider trying MetaMask!')
+        if (!window.ethereum) {
+            alert('Non-Ethereum browser detected. You should consider trying MetaMask!')
         }
     },
 
     // Carga las cuentas de la billetera
     loadAccount: async () => {
         console.log("loadAccount Method")
-        // Set the current blockchain account
+        // Set the current mm account
         const accounts = await ethereum.request({ method: 'eth_accounts' });
         App.walletAccount = accounts[0];
+        console.log("Cuenta MM: ", App.walletAccount)
     },
 
     // Carga los contratos con los que interactua la DAPP
@@ -65,6 +67,10 @@ App = {
     // Carga los NFT que tiene la billetera
     loadNfts: async () => {
         console.log("loadNfts Method")
+        
+        //Clear any existing nft tokenId
+        App.nftList= new Array()
+
         let logs = await App.nft.getPastEvents('Transfer', {
             filter: {address: App.walletAccount},
             fromBlock: 0,
@@ -87,17 +93,16 @@ App = {
                 App.nftList.splice($.inArray(tokenId, App.nftList),1);
             }
         })
-        console.log(App.nftList)
     },
 
     // Muestra/Oculta un spinner para indicar si se esta trabajando
     setLoading: (boolean) => {
         App.loading = boolean
-        const loader = $('#loader')
+        let loader = $('#loader')
         if (boolean) {
-            loader.show()
+            loader.removeClass("d-none").addClass("d-block")
         } else {
-            loader.hide()
+            loader.removeClass("d-block").addClass("d-none")
         }
     },
 
@@ -112,13 +117,32 @@ App = {
         App.setLoading(true)
 
         // Render Account
-        $('#account').html(App.walletAccount)
+        await App.renderWallet(App.walletAccount)
 
         //Render Nft List
         await App.renderWalletNft()
 
         // Update loading state
         App.setLoading(false)
+    },
+
+    renderWallet: async (walletAddress) => {
+        
+        let walletAuth = $('#authWallet')
+        let login = $('#btnLogin')
+
+        if(walletAddress) {
+            
+            $('#account').html(walletAddress)
+            walletAuth.show()
+            login.hide()
+        }
+        else
+        {
+            walletAuth.hide()
+            login.show()
+        }
+
     },
 
     renderWalletNft: async () => {
@@ -158,6 +182,18 @@ App = {
         .catch((error) => {
           alert(error.message)
         });}
+    },
+
+    connectWallet: async () => {
+        console.log("debo conectar")
+        try {
+            // Will open the MetaMask UI
+            // You should disable this button while the request is pending!
+            await ethereum.request({ method: 'eth_requestAccounts' });
+          } catch (error) {
+            console.error(error);
+          }
+        return false;
     },
 
    
@@ -208,9 +244,13 @@ $(() => {
          // detect Metamask account change
          window.ethereum.on('accountsChanged', function (accounts) {
             App.load()
+        });       
+
+         // Create
+         $("#btnSignIn").on('click', function () {
+            App.connectWallet()
         });
 
-        
 
          // Create
          $("#btnCreate").on('click', function () {
@@ -221,5 +261,8 @@ $(() => {
         $("#btnCancel").on('click', function () {
             App.cancel()
         });
+
+
+        
     })
 })

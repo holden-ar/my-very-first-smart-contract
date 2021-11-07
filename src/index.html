@@ -6,8 +6,8 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
-    <title>hvaldez | my very first dapp</title>
-
+    <title>Smart Contracts for Dummies  | my very first dapp</title>
+    <link rel="shortcut icon" href="dummy.png" />
     <!-- Bootstrap -->
     <link href="vendor/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
 
@@ -19,50 +19,72 @@
     <![endif]-->
 
     <style>
-        #main {
-            margin-top: 50px;
+       body::after {
+            background-image: url('https://images.pexels.com/photos/1939485/pexels-photo-1939485.jpeg?auto=compress&cs=tinysrgb&dpr=3&h=750&w=1260');
+            content: "";
+            opacity: 0.3;
+            background-size: contain;
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            right: 0;
+            left: 0;
+            z-index: -1;  
+        
         }
+
+
+        
+  
 
         #content {
             display: block;
         }
 
-        form {
-            width: 350px;
-            margin-bottom: 10px;
-        }
 
-        ul {
-            margin-bottom: 0px;
-        }
-
-        #completedTaskList .content {
-            color: grey;
-            text-decoration: line-through;
-        }
     </style>
 </head>
 
 <body>
-    <div id="loader">
+    <div id="loader" class="d-none">
         <div class="d-flex justify-content-center">
             <div class="spinner-border" role="status">
-              <span class="visually-hidden">Loading...</span>
+                <span">Loading...</span>
             </div>
-          </div>
+        </div>
     </div>
-    <nav class="navbar navbar-light bg-light">
+    <nav class="navbar navbar-light bg-light justify-content-between">
         <div class="container-fluid">
             <a class="navbar-brand" href="#">
                 <img src="dummy.png" alt="" width="30" class="d-inline-block align-text-top">
                 Smart Contracts for Dummies
                 <h5>
             </a>
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-wallet2"
-                viewBox="0 0 16 16">
-                <path
-                    d="M12.136.326A1.5 1.5 0 0 1 14 1.78V3h.5A1.5 1.5 0 0 1 16 4.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 13.5v-9a1.5 1.5 0 0 1 1.432-1.499L12.136.326zM5.562 3H13V1.78a.5.5 0 0 0-.621-.484L5.562 3zM1.5 4a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-13z" />
-            </svg>&nbsp;<span id="account" class="badge rounded-pill bg-secondary">-</span></h5>
+            <div id="authWallet">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-wallet2"
+                    viewBox="0 0 16 16">
+                    <path
+                        d="M12.136.326A1.5 1.5 0 0 1 14 1.78V3h.5A1.5 1.5 0 0 1 16 4.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 13.5v-9a1.5 1.5 0 0 1 1.432-1.499L12.136.326zM5.562 3H13V1.78a.5.5 0 0 0-.621-.484L5.562 3zM1.5 4a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-13z" />
+                </svg>&nbsp;
+                <span id="account" class="badge rounded-pill bg-secondary">-</span></h5>
+                <span id="btnLogin">
+                    <a id="btnSignIn" href="#" class="btn btn-primary btn active" role="button" aria-pressed="true">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                            class="bi bi-box-arrow-in-right" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd"
+                                d="M6 3.5a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-2a.5.5 0 0 0-1 0v2A1.5 1.5 0 0 0 6.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-8A1.5 1.5 0 0 0 5 3.5v2a.5.5 0 0 0 1 0v-2z">
+                            </path>
+                            <path fill-rule="evenodd"
+                                d="M11.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5H1.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z">
+                            </path>
+                        </svg>&nbsp;Login
+                    </a>
+                </span>
+            </div>
+
+
+
+
         </div>
     </nav>
     <div class="container-fluid">
