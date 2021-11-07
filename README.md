@@ -5,6 +5,21 @@ Proyecto realizado en solidity que tiene por objetivo aplicar los (humildes) con
 
 
 
+
+## Login
+<img src="readme-files/login.gif" alt="contrato" title="contracto" align="center" height="480" />
+
+
+## Cambio de cuenta reactivo
+<img src="readme-files/change-user.gif" alt="contrato" title="contracto" align="center" height="480" />
+
+## Subastar
+Enviar al contrato SubastaNtf.sol un token que tiene en su billetera para poder subastarlo. *Notar que la primer operación es autorizar al contrato para usar el ntf y la segunda autorizar la transferencia del ntfs al contrato*
+
+<img src="readme-files/create-auction.gif" alt="contrato" title="contracto" align="center" height="480" />
+
+
+
 ## Idea general
 
 <img src="https://gateway.pinata.cloud/ipfs/QmfTMYn9hmhqoaio8sSyfqcpJaMxGm6Fy8Fm8NDgCTcCJq" alt="contrato" title="contracto" align="center" height="600" />

@@ -39,7 +39,7 @@ module.exports = async function(callback) {
     });
 
     //Creo el NFT #4
-    await nft.CreateNFT(owner1, 
+    await nft.CreateNFT(owner2, 
         "QmSdAUGBZxswMM9adv4r3dmxTsK2pLY6P9i3zzcngHhGhr", 
         "ipfs://QmRdXM4Huk6haco9GXo2GV1xCKzuWixuRjUoeiDpfjEams")
     .then((response) => {
