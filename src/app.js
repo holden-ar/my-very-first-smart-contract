@@ -6,6 +6,9 @@ App = {
     walletUsers: [],
 
     load: async () => {
+        console.log("Load Method")
+        App.currentNft= null,
+        App.nftList= new Array(),
         await App.loadWeb3()
         await App.loadAccount()
         await App.loadContract()
@@ -15,12 +18,10 @@ App = {
 
     // Carga Web3 provider
     loadWeb3: async () => {
+        console.log("loadWeb3 Method")
         // Modern dapp browsers...
         if (window.ethereum) {
             try {
-                App.web3Provider = web3.currentProvider
-                // Request account access if needed
-                await ethereum.enable()
                 // Acccounts now exposed
                 web3.eth.sendTransaction({/* ... */ })
 
@@ -36,6 +37,7 @@ App = {
 
     // Carga las cuentas de la billetera
     loadAccount: async () => {
+        console.log("loadAccount Method")
         // Set the current blockchain account
         const accounts = await ethereum.request({ method: 'eth_accounts' });
         App.walletAccount = accounts[0];
@@ -43,17 +45,17 @@ App = {
 
     // Carga los contratos con los que interactua la DAPP
     loadContract: async () => {
-        // Create a JavaScript version of the smart contract
+        console.log("loadContract Method")
 
         //Subasta
         const Subasta = await $.getJSON('SubastaNft.json')
         App.contracts.Subasta = TruffleContract(Subasta)
-        App.contracts.Subasta.setProvider(App.web3Provider)
+        App.contracts.Subasta.setProvider(window.ethereum)
 
         //Nft
         const Nft = await $.getJSON('Nft4Auctions.json')
         App.contracts.Nft = TruffleContract(Nft)
-        App.contracts.Nft.setProvider(App.web3Provider)
+        App.contracts.Nft.setProvider(window.ethereum)
 
         // Hydrate the smart contract with values from the blockchain
         App.subasta = await App.contracts.Subasta.deployed()
@@ -62,6 +64,7 @@ App = {
 
     // Carga los NFT que tiene la billetera
     loadNfts: async () => {
+        console.log("loadNfts Method")
         let logs = await App.nft.getPastEvents('Transfer', {
             filter: {address: App.walletAccount},
             fromBlock: 0,
@@ -100,7 +103,7 @@ App = {
 
 
     render: async () => {
-
+        console.log("Render Method")
         // Prevent double render
         if (App.loading) {
             return
@@ -119,6 +122,8 @@ App = {
     },
 
     renderWalletNft: async () => {
+        console.log("renderWalletNft Method")
+        $("#nftList").empty();
         App.nftList.forEach(function(tokenId) {
             let itemId = "token"+tokenId
             item = '<a href="#" id="'+itemId+'" class="list-group-item list-group-item-action nft">NFT #'+tokenId+'</a>'
@@ -135,7 +140,7 @@ App = {
     },
 
     renderNft: async (id) => {
-        
+        console.log("renderNft Method")
         if(id != null)
        { App.currentNft = id
         await App.nft.tokenURI(id).then((result) => {
@@ -199,6 +204,13 @@ App = {
 $(() => {
     $(window).load(() => {
         App.load()
+
+         // detect Metamask account change
+         window.ethereum.on('accountsChanged', function (accounts) {
+            App.load()
+        });
+
+        
 
          // Create
          $("#btnCreate").on('click', function () {

@@ -12,6 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "@openzeppelin/contracts": "^4.3.2",
+    "bootstrap-icons": "^1.7.0",
     "solc": "^0.7.3",
     "web3": "^1.6.0",
     "web3-utils": "^1.6.0"
