@@ -4,6 +4,26 @@ Proyecto realizado en solidity que tiene por objetivo aplicar los (humildes) con
 
 
 
+## Qué se necesita para usarlo?
+
+Para probar los contratos solo se necesita remix y tener instalado truffle. 
+Para poder probar la DApp se necesita tener instalado MetaMask, Ganache y haber importado las 2 primeras cuentas de Ganache en Metamask.
+
+
+
+## Cómo se instala?
+Los pasos acá enumerados son para instalar los contratos y ejecutar la DApp
+
+- Clonar este repo
+- Iniciar Ganache
+- Instalacion de Smart Contracts
+    - En una consola esscribir los siguiente scomandos de truffle:
+        - truffle console
+        - una vez que nos devuelve el prompt escribimos *build* para compilar los contratos 
+        - Luego escribimos *migrate* para desplegarlos sobre ganache (que debe estár ejecutandose previamente)
+- Instalación de la DApp
+    - Abrimos una nueva terminal para instalar las dependencias, para ello escribimos *npm install*
+    - Luego que  escribir *npm run dev* con esto se inicia lite server y abre la DApp en el explorador
 
 
 ## Connect Wallet
