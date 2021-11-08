@@ -1,206 +1,260 @@
 App = {
     loading: false,
+    currentNft: null,
+    nftList: [],
     contracts: {},
     walletUsers: [],
 
     load: async () => {
-        await App.loadWeb3()
+        console.log("Load Method")
+        let isOk = await App.checkModernBrowser()
+
+        
         await App.loadAccount()
-        await App.loadContract()
-        await App.loadAuctionInfo()
-        await App.render()
+
+        let main = $("#content")
+        if(App.walletAccount)
+        {
+            await App.loadContract()
+            await App.loadNfts()
+            await App.render()
+            main.show(500);
+        }
+        else
+        {
+            await App.renderWallet(App.walletAccount)
+            main.hide()
+        }
     },
 
-    // https://medium.com/metamask/https-medium-com-metamask-breaking-change-injecting-web3-7722797916a8
-    loadWeb3: async () => {
-        App.web3 = new Web3(Web3.givenProvider || "ws://localhost:7545");
-
+    // Carga Web3 provider
+    checkModernBrowser: async () => {
+        console.log("checkModernBrowser Method")
         // Modern dapp browsers...
-        if (window.ethereum) {
-            try {
-                App.web3Provider = web3.currentProvider
-                // Request account access if needed
-                await ethereum.enable()
-                // Acccounts now exposed
-                web3.eth.sendTransaction({/* ... */ })
-
-            } catch (error) {
-                // User denied account access...
-            }
-        }
-        // Legacy dapp browsers...
-        else if (window.web3) {
-            console.log('Legacy dapp browsers...')
-            App.web3Provider = web3.currentProvider
-            window.web3 = new Web3(web3.currentProvider)
-            // Acccounts always exposed
-            web3.eth.sendTransaction({/* ... */ })
-        }
-        // Non-dapp browsers...
-        else {
-            console.log('Non-Ethereum browser detected. You should consider trying MetaMask!')
+        if (!window.ethereum) {
+            alert('Non-Ethereum browser detected. You should consider trying MetaMask!')
         }
     },
 
+    // Carga las cuentas de la billetera
     loadAccount: async () => {
-        // Set the current blockchain account
+        console.log("loadAccount Method")
+        // Set the current mm account
         const accounts = await ethereum.request({ method: 'eth_accounts' });
         App.walletAccount = accounts[0];
-
-        App.walletUsers["0x61A1BdcF6947A0DB5052796BfFc2B09b742511e2".toLowerCase()] = "Marcelo";
-        App.walletUsers["0x9dCb029930A1d1B4cBCC77DC90Ce8d7cAE88ddd6".toLowerCase()] = "Julián";
-        App.walletUsers["0xF87b4306E5219c691142D45DE44E15a2Bf2cfe0b".toLowerCase()] = "Enzo";
-
-        App.currentUserName = App.walletUsers[String(App.walletAccount)];
+        console.log("Cuenta MM: ", App.walletAccount)
     },
 
+    // Carga los contratos con los que interactua la DAPP
     loadContract: async () => {
-        // Create a JavaScript version of the smart contract
-        const Subasta = await $.getJSON('Subasta.json')
+        console.log("loadContract Method")
+
+        //Subasta
+        const Subasta = await $.getJSON('SubastaNft.json')
         App.contracts.Subasta = TruffleContract(Subasta)
-        App.contracts.Subasta.setProvider(App.web3Provider)
+        App.contracts.Subasta.setProvider(window.ethereum)
+
+        //Nft
+        const Nft = await $.getJSON('Nft4Auctions.json')
+        App.contracts.Nft = TruffleContract(Nft)
+        App.contracts.Nft.setProvider(window.ethereum)
 
         // Hydrate the smart contract with values from the blockchain
         App.subasta = await App.contracts.Subasta.deployed()
+        App.nft = await App.contracts.Nft.deployed()
     },
 
-    loadAuctionInfo: async () => {
-        App.status = await App.subasta.Estado()
-        App.start = await App.subasta.subasta_inicio()
-        App.end = await App.subasta.subasta_finaliza()
-        let bid = await App.subasta.ofertaGanadora()
+    // Carga los NFT que tiene la billetera
+    loadNfts: async () => {
+        console.log("loadNfts Method")
+        
+        //Clear any existing nft tokenId
+        App.nftList= new Array()
 
-        App.higherBid = String(App.web3.utils.fromWei(bid, 'ether'))
-        App.winerAccount = await App.subasta.oferenteGanador()
+        let logs = await App.nft.getPastEvents('Transfer', {
+            filter: {address: App.walletAccount},
+            fromBlock: 0,
+            toBlock: 'latest'
+        });
+
+
+        //const { from, to, tokenId } = log.args;
+        logs.forEach(function(log) {
+            let addressFrom = log.args[0]
+            let addressTo = log.args[1]
+            let tokenId = log.args[2].toString()
+            
+
+            if (App.walletAccount.toUpperCase() == addressTo.toUpperCase()) {
+                App.nftList.push(tokenId);
+            }
+            else if(App.walletAccount.toUpperCase() == addressFrom.toUpperCase())
+            {
+                App.nftList.splice($.inArray(tokenId, App.nftList),1);
+            }
+        })
     },
 
-
+    // Muestra/Oculta un spinner para indicar si se esta trabajando
     setLoading: (boolean) => {
         App.loading = boolean
-        const loader = $('#loader')
-        const content = $('#content')
+        let loader = $('#loader')
         if (boolean) {
-            loader.show()
-            content.hide()
+            loader.removeClass("d-none").addClass("d-block")
         } else {
-            loader.hide()
-            content.show()
+            loader.removeClass("d-block").addClass("d-none")
         }
     },
 
+
     render: async () => {
+        console.log("Render Method")
         // Prevent double render
         if (App.loading) {
             return
         }
-
         // Update app loading state
         App.setLoading(true)
 
-        // Render username
-        $('#usuario').html(App.currentUserName)
-
         // Render Account
-        $('#account').html(App.walletAccount)
+        await App.renderWallet(App.walletAccount)
 
-        // Render startDate
-        var startDate = new Date(App.start * 1000);
-        $('#inicio').html(startDate.toLocaleString())
-
-        // Render endDate
-        var endDate = new Date(App.end * 1000);
-        App.endDate =endDate.toLocaleString()
-        $('#fin').html(endDate.toLocaleString())
-
-        // Render status
-        await App.renderStatusLegend(String(App.status), App.end * 1000)
-        
-
-        const mensaje = "Mejor oferta <b>" + App.walletUsers[String(App.winerAccount.toLowerCase())] + "</b> " + App.higherBid + " eth."
-        $('#ganador').html(mensaje)
-
-
+        //Render Nft List
+        await App.renderWalletNft()
 
         // Update loading state
         App.setLoading(false)
     },
 
-    bid: async () => {
-        App.setLoading(true)
-        const ammount = $('#ammount').val() * 1000000000000000000;
-        await App.subasta.ofertar({ from: App.walletAccount, value: ammount })
-        window.location.reload()
+    renderWallet: async (walletAddress) => {
+        
+        let walletAuth = $('#authWallet')
+        let login = $('#btnLogin')
+
+        if(walletAddress) {
+            
+            $('#account').html(walletAddress)
+            walletAuth.show()
+            login.hide()
+        }
+        else
+        {
+            walletAuth.hide()
+            login.show()
+        }
+
     },
 
-    withdraw: async () => {
+    renderWalletNft: async () => {
+        console.log("renderWalletNft Method")
+        $("#nftList").empty();
+        App.nftList.forEach(function(tokenId) {
+            let itemId = "token"+tokenId
+            item = '<a href="#" id="'+itemId+'" class="list-group-item list-group-item-action nft">NFT #'+tokenId+'</a>'
+                
+            $("#nftList").append(item)
+            $("#"+itemId).on('click', function () { App.renderNft(tokenId); return false; });
+            
+        })
+
+        if(App.nftList.length > 0)
+        {
+            App.renderNft(App.nftList[0])
+        }
+    },
+
+    renderNft: async (id) => {
+        console.log("renderNft Method")
+        if(id != null)
+       { App.currentNft = id
+        await App.nft.tokenURI(id).then((result) => {
+
+            var url = result.replace("ipfs://", "https://gateway.pinata.cloud/ipfs/");
+            $.getJSON( url, function( json ) {
+                let imgUrl = "https://gateway.pinata.cloud/ipfs/"+json.hash
+                $('#nft_image').attr("src",imgUrl);
+                $('#nft_title').html(json.name);
+                $('#nft_author').html(json.by);
+
+
+              });
+        })
+        .catch((error) => {
+          alert(error.message)
+        });}
+    },
+
+    connectWallet: async () => {
+        console.log("debo conectar")
+        try {
+            // Will open the MetaMask UI
+            // You should disable this button while the request is pending!
+            await ethereum.request({ method: 'eth_requestAccounts' });
+          } catch (error) {
+            console.error(error);
+          }
+        return false;
+    },
+
+   
+    crear: async () => {
         App.setLoading(true)
-        await App.subasta.retirar({ from: App.walletAccount })
-        window.location.reload()
+
+        // Autoriza a usar el ntft
+        await App.nft.approve(App.subasta.address, App.currentNft, { from: App.walletAccount })
+        .then((result) => {
+            // Transfiere el nft al contrato
+            App.subasta.crearSubasta(App.nft.address, App.currentNft, 10000, { from: App.walletAccount }).then((result) => {
+                window.location.reload()
+            })
+            .catch((error) => {
+              alert(error.message)
+              App.setLoading(false)
+            });
+          })
+          .catch((error) => {
+            alert(error.message)
+            App.setLoading(false)
+          });
+
+
+        
     },
 
     cancel: async () => {
         App.setLoading(true)
-        await App.subasta.cancelarSubasta({ from: App.walletAccount })
-        window.location.reload()
-    },
 
-    renderStatusLegend: async (status, endDate) => {
-        var statusLegend;
-        currentDate = Date.now()
-        var badgeStyle;
-        var statusMessage;
-        var controlIsActive;
-        switch (status) {
-            case "0":
-                statusLegend = "Cancelada";
-                badge = "bg-danger"
-                statusMessage = "Finalizó el "+App.endDate
-                controlIsActive =  false
-                break;
-            case "1":
-                if (currentDate > endDate)
-                {
-                    statusLegend = "finalizada"
-                    badgeStyle = "bg-danger"
-                    statusMessage = "Finalizó el "+App.endDate
-                    controlIsActive =  false
-
-                }
-                else
-                {
-                    statusLegend = "En Curso"
-                    badgeStyle = "bg-success"
-                    statusMessage = "Finaliza el "+App.endDate
-                    controlIsActive =  true
-                }
-                break;
-        }
-        $('#status').removeClass("bg-success")
-        $('#status').removeClass("bg-danger")
-        $('#status').addClass(badgeStyle)
-        $('#status').html(statusLegend)
-        $('#statusDate').html(statusMessage)
-        $( "#ammount" ).prop( "disabled", !controlIsActive);
-        $( "#btnBid" ).prop( "disabled", !controlIsActive);
-
+        let tokenId = $('#auctionId').val();
+        await App.subasta.cancelarSubasta(App.nft.address, tokenId, { from: App.walletAccount })
+        .then((result) => {
+            window.location.reload()
+          })
+          .catch((error) => {
+            alert(error.message)
+            App.setLoading(false)
+          });
+        
     }
-
-
-
 }
 
 $(() => {
     $(window).load(() => {
         App.load()
 
-        // Bid
-        $("#btnBid").on('click', function () {
-            App.bid()
+         // detect Metamask account change
+         window.ethereum.on('accountsChanged', function (accounts) {
+            App.load()
+        });       
+
+         // Create
+         $("#btnSignIn").on('click', function () {
+            App.connectWallet()
         });
 
-        // withdraw
-        $("#btnWithdraw").on('click', function () {
-            App.withdraw()
+
+         // Create
+         $("#btnCreate").on('click', function () {
+            App.crear()
         });
 
         // Cancel
@@ -208,5 +262,7 @@ $(() => {
             App.cancel()
         });
 
+
+        
     })
 })
